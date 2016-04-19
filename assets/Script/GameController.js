@@ -48,6 +48,10 @@ cc.Class({
             default: null,
             type: cc.Button 
         },
+        uiGame: {
+            default: null,
+            type: cc.Animation
+        },
         
         curScore: 0,
         curIsPlaySound : 1,
@@ -203,6 +207,8 @@ cc.Class({
         if(this.curIsPlaySound == true)
             cc.audioEngine.playEffect(this.sfxFail, false);
         
+        this.shakeCamera();
+        
         this.curGameState = GameState.GAMEOVER;
         this.timerForProgressBar = 0;
         this.progressBarTimer.progress = 0;
@@ -227,5 +233,10 @@ cc.Class({
     
     restart: function(){
         cc.director.loadScene("GameScene");
-    }
+    },
+    
+    shakeCamera: function(){
+        //let animationUIGame = this.uiGame.node.getComponent(cc.Animation);
+        this.uiGame.play();
+    },
 });
