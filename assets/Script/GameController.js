@@ -41,11 +41,16 @@ cc.Class({
             type: cc.Node
         },
         popupGameOver: {
-          default: null,
-          type: cc.Animation 
+            default: null,
+            type: cc.Animation 
+        },        
+        btnToggleSound: {
+            default: null,
+            type: cc.Button 
         },
         
         curScore: 0,
+        curIsPlaySound : 1,
         
         timeLimitPerQuestion: 2,
         timerForProgressBar: 0,
@@ -53,10 +58,25 @@ cc.Class({
         curAnswerResult: false,
         curGameState : GameState.PLAYING,
         
+        localStorage: null,
+        
     },
 
     // use this for initialization
     onLoad: function () {
+        this.localStorage = cc.sys.localStorage;
+        if(this.localStorage.getItem("sound") == null)
+        {
+            this.localStorage.setItem("sound", 1);
+            this.curIsPlaySound = 1;
+        }
+        else
+        this.curIsPlaySound = this.localStorage.getItem("sound");
+        var soundController = this.btnToggleSound.getComponent("SoundToggleController");
+        soundController.toggleSprite(this.curIsPlaySound);
+        
+        cc.log("curIsPlaySound : " + this.curIsPlaySound);
+        
         this.initProgressBarTimer();
         
         this.generateQuestion();
@@ -87,6 +107,17 @@ cc.Class({
         }
         else
         this.gameOver(); 
+    },
+    
+    onBtnToggleSoundClicked: function(){
+       var soundController = this.btnToggleSound.getComponent("SoundToggleController");
+       this.curIsPlaySound = this.curIsPlaySound == 1 ? 0 : 1;
+       soundController.toggleSprite(this.curIsPlaySound);
+       
+       //Save sound setting to local storage
+       this.localStorage.setItem("sound", this.curIsPlaySound);
+       
+       cc.log("curIsPlaySound : " + this.curIsPlaySound);
     },
     
     initProgressBarTimer: function(){
@@ -163,11 +194,14 @@ cc.Class({
     addScore: function(value){
         this.curScore += value;
         this.lblScore.string = this.curScore;
-        cc.audioEngine.playEffect(this.sfxScore, false);
+        
+        if(this.curIsPlaySound == true)
+            cc.audioEngine.playEffect(this.sfxScore, false);
     },
     
     gameOver: function(){
-        cc.audioEngine.playEffect(this.sfxFail, false);
+        if(this.curIsPlaySound == true)
+            cc.audioEngine.playEffect(this.sfxFail, false);
         
         this.curGameState = GameState.GAMEOVER;
         this.timerForProgressBar = 0;
